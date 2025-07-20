@@ -57,20 +57,20 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 24 24 27;
+    --foreground: 250 250 250;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 39 39 42;
+    --card-foreground: 250 250 250;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 39 39 42;
+    --popover-foreground: 250 250 250;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 99 102 241;
+    --primary-foreground: 250 250 250;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 63 63 70;
+    --secondary-foreground: 250 250 250;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -102,5 +102,15 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .pulse {
+    @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
   }
 }

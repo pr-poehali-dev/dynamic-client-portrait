@@ -1,11 +1,17 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Icon from '@/components/ui/icon';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, ResponsiveContainer } from 'recharts';
 
 const Index = () => {
+  const [isDark, setIsDark] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState('');
+
   // Mock data для графиков
   const demographyData = [
     { name: 'Мужчины', value: 45, color: '#2563EB' },
@@ -19,26 +25,127 @@ const Index = () => {
   ];
 
   const revenueData = [
-    { month: 'Янв', revenue: 120, expenses: 80 },
-    { month: 'Фев', revenue: 135, expenses: 90 },
-    { month: 'Мар', revenue: 148, expenses: 95 },
-    { month: 'Апр', revenue: 165, expenses: 110 },
-    { month: 'Май', revenue: 180, expenses: 120 },
-    { month: 'Июн', revenue: 195, expenses: 125 }
+    { month: 'Янв', revenue: 120, expenses: 80, customers: 1200 },
+    { month: 'Фев', revenue: 135, expenses: 90, customers: 1350 },
+    { month: 'Мар', revenue: 148, expenses: 95, customers: 1480 },
+    { month: 'Апр', revenue: 165, expenses: 110, customers: 1650 },
+    { month: 'Май', revenue: 180, expenses: 120, customers: 1800 },
+    { month: 'Июн', revenue: 195, expenses: 125, customers: 1950 }
   ];
 
   const categoryData = [
-    { category: 'Продукты', amount: 85 },
-    { category: 'Авто', amount: 120 },
-    { category: 'Развлечения', amount: 65 },
-    { category: 'Одежда', amount: 95 },
-    { category: 'Здоровье', amount: 75 }
+    { category: 'Продукты', amount: 85, customers: 8500, avgBill: 2100 },
+    { category: 'Авто', amount: 120, customers: 3200, avgBill: 8500 },
+    { category: 'Развлечения', amount: 65, customers: 6500, avgBill: 1800 },
+    { category: 'Одежда', amount: 95, customers: 9500, avgBill: 2200 },
+    { category: 'Здоровье', amount: 75, customers: 4200, avgBill: 3800 }
   ];
 
+  const detailedData = {
+    'Продукты': [
+      { name: 'Молоко', sales: 2100, growth: '+12%' },
+      { name: 'Хлеб', sales: 1800, growth: '+8%' },
+      { name: 'Мясо', sales: 3200, growth: '+15%' }
+    ],
+    'Авто': [
+      { name: 'Бензин', sales: 8500, growth: '+5%' },
+      { name: 'Запчасти', sales: 4200, growth: '+22%' },
+      { name: 'Сервис', sales: 6800, growth: '+18%' }
+    ]
+  };
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle('dark');
+  };
+
+  const handleExport = (format: string) => {
+    const data = JSON.stringify({ revenueData, categoryData, demographyData });
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics-report.${format}`;
+    a.click();
+  };
+
+  const DrillDownModal = ({ category, data }: { category: string, data: any[] }) => (
+    <DialogContent className="max-w-4xl">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Icon name="BarChart3" size={20} />
+          Детализация: {category}
+        </DialogTitle>
+      </DialogHeader>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {data.map((item, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow animate-fade-in">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold">{item.name}</h4>
+                    <p className="text-2xl font-bold mt-2">₽{item.sales.toLocaleString()}</p>
+                    <div className="flex items-center mt-2">
+                      <Icon name="TrendingUp" size={16} className="text-green-500 mr-1" />
+                      <span className="text-sm text-green-500">{item.growth}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </DialogContent>
+  );
+
+  const ExportSheet = () => (
+    <SheetContent>
+      <SheetHeader>
+        <SheetTitle className="flex items-center gap-2">
+          <Icon name="Download" size={20} />
+          Экспорт отчетов
+        </SheetTitle>
+      </SheetHeader>
+      <div className="space-y-6 mt-6">
+        <div>
+          <h3 className="font-semibold mb-4">Выберите формат:</h3>
+          <div className="space-y-3">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={() => handleExport('pdf')}
+            >
+              <Icon name="FileText" size={16} className="mr-2" />
+              PDF отчет
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={() => handleExport('xlsx')}
+            >
+              <Icon name="FileSpreadsheet" size={16} className="mr-2" />
+              Excel таблица
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={() => handleExport('json')}
+            >
+              <Icon name="Code" size={16} className="mr-2" />
+              JSON данные
+            </Button>
+          </div>
+        </div>
+      </div>
+    </SheetContent>
+  );
+
   return (
-    <div className="min-h-screen bg-background font-['Inter'] text-foreground">
+    <div className={`min-h-screen bg-background font-['Inter'] text-foreground transition-colors duration-300 ${isDark ? 'dark' : ''}`}>
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -46,11 +153,27 @@ const Index = () => {
               <p className="text-muted-foreground mt-1">Аналитика клиентской базы в реальном времени</p>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm">
-                <Icon name="Download" size={16} className="mr-2" />
-                Экспорт
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={toggleTheme}
+                className="hover-scale"
+              >
+                <Icon name={isDark ? "Sun" : "Moon"} size={16} className="mr-2" />
+                {isDark ? 'Светлая' : 'Темная'}
               </Button>
-              <Button size="sm">
+              
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="hover-scale">
+                    <Icon name="Download" size={16} className="mr-2" />
+                    Экспорт
+                  </Button>
+                </SheetTrigger>
+                <ExportSheet />
+              </Sheet>
+              
+              <Button size="sm" className="hover-scale">
                 <Icon name="RefreshCw" size={16} className="mr-2" />
                 Обновить
               </Button>
